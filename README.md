@@ -25,7 +25,6 @@
 
 ## 1) Project Overview
 This project analyzes one year of Amazon seller performance data (daily aggregated metrics) to uncover business-critical insights. Using SQL-based analytics, the project identifies operational inefficiencies, conversion bottlenecks, Buy Box instability patterns, refund spikes, and customer behavior trends.
-
 The goal is to generate *data-driven insights* that help improve sales, reduce operational losses, optimize pricing, and strengthen listing performance.
 
 ---
