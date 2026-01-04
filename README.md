@@ -146,7 +146,12 @@ CROSS JOIN stats;
 - CII_mobile = **0.01661**  
 - CII_browser = **0.05689**  
 **Meaning:** Browser intent is 3.5× higher than mobile — fix mobile PDP.  
-**SQL:** `code/sql/customer_intent_index.sql`  
+**SQL:** 
+SELECT
+AVG(Units_Ordered / NULLIF(Page_views_total, 0)) AS avg_CII_total,
+AVG(Units_Ordered / NULLIF(Page_views_mobile_app, 0)) AS avg_CII_mobile,
+AVG(Units_Ordered / NULLIF(Page_views_browser, 0)) AS avg_CII_browser
+FROM seller_performance; 
 **Output:** `outputs/cii_overall.csv`
 
 ---
@@ -158,7 +163,16 @@ CROSS JOIN stats;
 - Regression slope = **1.5874**  
 - Strong correlation between Buy Box % & revenue  
 **Meaning:** Losing even 1–2% Featured Offer % materially reduces sales.  
-**SQL:** `code/sql/featured_offer_impact.sql`  
+**SQL:** 
+SELECT
+SUM((feat_pct_change - AVG_feat) * (sales_pct_change - AVG_sales)) / NULLIF(SUM((feat_pct_change - AVG_feat) * (feat_pct_change - AVG_feat)),0) AS slope_pct_change
+FROM (
+SELECT feat_pct_change, sales_pct_change,
+(SELECT AVG(feat_pct_change) FROM f WHERE feat_pct_change IS NOT NULL AND sales_pct_change IS NOT NULL) AS AVG_feat,
+(SELECT AVG(sales_pct_change) FROM f WHERE feat_pct_change IS NOT NULL AND sales_pct_change IS NOT NULL) AS AVG_sales
+FROM f
+WHERE feat_pct_change IS NOT NULL AND sales_pct_change IS NOT NULL
+) x; 
 **Output:** `outputs/featured_offer_impact.csv`
 
 ---
@@ -171,7 +185,15 @@ CROSS JOIN stats;
 - 2024-09-15 — RPS ~ 160  
 - 2024-06-21 — RPS ~ 62  
 **Meaning:** Likely SKU-level or fulfillment issues — requires investigation.  
-**SQL:** `code/sql/refund_pressure.sql`  
+**SQL:** 
+SELECT
+Date,
+Refund_rate,
+Units_refunded,
+Units_Ordered,
+(Refund_rate * 0.6) + ((Units_refunded / NULLIF(Units_Ordered, 0)) * 0.4) AS RPS
+FROM seller_performance
+ORDER BY RPS DESC LIMIT 3; 
 **Output:** `outputs/rps_summary.csv`
 
 ---
@@ -181,7 +203,12 @@ CROSS JOIN stats;
 **session → order item:** 0.0161  
 **order item → unit:** 1.0569  
 **Meaning:** Major drop at the session → order stage. Customers visit but do not buy — PDP improvements needed.  
-**SQL:** `code/sql/funnel_rates.sql`  
+**SQL:**
+SELECT
+AVG(Sessions_total / NULLIF(Page_views_total, 0)) AS avg_pv_to_session,
+AVG(Total_Order_Items / NULLIF(Sessions_total, 0)) AS avg_session_to_orderitem,
+AVG(Units_Ordered / NULLIF(Total_Order_Items, 0)) AS avg_orderitem_to_unit
+FROM seller_performance;  
 **Output:** `outputs/funnel_per_day.csv`
 
 ---
@@ -194,7 +221,16 @@ CROSS JOIN stats;
 - 2025-01-27  
 - 2025-01-28  
 **Meaning:** Possible Buy Box loss, suppression, or technical issues.  
-**SQL:** `code/sql/anomaly_detection.sql`  
+**SQL:** 
+WITH stats AS (
+SELECT AVG(Ordered_Product_Sales) AS avg_sales, AVG(Page_views_total) AS avg_pv FROM seller_performance
+)
+SELECT s.Date, s.Ordered_Product_Sales, s.Page_views_total
+FROM seller_performance s
+CROSS JOIN stats
+WHERE s.Ordered_Product_Sales < 0.6 * stats.avg_sales
+AND s.Page_views_total > stats.avg_pv
+ORDER BY s.Date LIMIT 4;  
 **Output:** `outputs/anomalies.csv`
 
 ---
@@ -206,7 +242,11 @@ CROSS JOIN stats;
 - Aug 11: ₹19.74  
 - May 8: ₹19.14  
 **Meaning:** Some days are extremely efficient — replicate those conditions.  
-**SQL:** `code/sql/revenue_per_session.sql`  
+**SQL:** 
+SELECT Date, Ordered_Product_Sales / NULLIF(Sessions_total, 0) AS revenue_per_session
+FROM seller_performance
+ORDER BY revenue_per_session DESC
+LIMIT 3; 
 **Output:** `outputs/revenue_per_session.csv`
 
 ---
@@ -216,28 +256,27 @@ CROSS JOIN stats;
 **Finding:**  
 - Best conversion at Offer Count ≈ **1287**  
 **Meaning:** Conversion peaks at certain competition levels — not a linear decline.  
-**SQL:** `code/sql/offer_count_saturation.sql`  
+**SQL:** 
+WITH offer_stats AS (
+SELECT Average_offer_count, AVG(Total_Order_Items / NULLIF(Sessions_total, 0)) AS avg_conversion
+FROM seller_performance
+GROUP BY Average_offer_count
+)
+SELECT Average_offer_count, avg_conversion
+FROM offer_stats
+ORDER BY avg_conversion DESC
+LIMIT 1;
 **Output:** `outputs/offer_count_buckets.csv`
 
 ---
 
-## 8) How Code & Outputs Are Organized
-```
-/code/sql/                → SQL files for each insight  
-/outputs/                 → CSV files for each insight  
-/visuals/                 → charts (optional)
-/erd/                     → ERD diagram  
-/data/sample/             → optional anonymized sample dataset  
-```
 
----
-
-## 9) Conclusion
+## 8) Conclusion
 The analysis reveals that price, Buy Box stability, refund spikes, and mobile PDP performance are the strongest drivers of business outcomes. Addressing these areas will improve sales consistency, reduce losses, and increase conversion across channels.
 
 ---
 
-## 10) Next Steps
+## 9) Next Steps
 - Add SKU-level analytics for deeper operational insights.  
 - Build a dashboard (Tableau, Power BI, or Streamlit).  
 - Automate SQL → CSV → dashboard refresh.  
@@ -246,7 +285,7 @@ The analysis reveals that price, Buy Box stability, refund spikes, and mobile PD
 
 ---
 
-## 11) References
+## 10) References
 - Amazon Seller Central documentation  
 - “Data Science for Business” — Provost & Fawcett  
 - SQL window functions documentation  
