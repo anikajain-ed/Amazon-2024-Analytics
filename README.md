@@ -151,8 +151,10 @@ SELECT
 AVG(Units_Ordered / NULLIF(Page_views_total, 0)) AS avg_CII_total,
 AVG(Units_Ordered / NULLIF(Page_views_mobile_app, 0)) AS avg_CII_mobile,
 AVG(Units_Ordered / NULLIF(Page_views_browser, 0)) AS avg_CII_browser
-FROM seller_performance; 
-**Output:** `outputs/cii_overall.csv`
+FROM seller_performance;
+
+**Output:** <img width="778" height="199" alt="Screenshot (2)" src="https://github.com/user-attachments/assets/84f86814-fca4-4b9f-9a7e-5a5aa1ecf445" />
+
 
 ---
 
@@ -183,8 +185,10 @@ SELECT feat_pct_change, sales_pct_change,
 (SELECT AVG(sales_pct_change) FROM f WHERE feat_pct_change IS NOT NULL AND sales_pct_change IS NOT NULL) AS AVG_sales
 FROM f
 WHERE feat_pct_change IS NOT NULL AND sales_pct_change IS NOT NULL
-) x; 
-**Output:** `outputs/featured_offer_impact.csv`
+) x;
+  
+**Output:** <img width="778" height="301" alt="Screenshot (3)" src="https://github.com/user-attachments/assets/f9b8871f-a587-49b8-b4ec-0156c10f60a1" />
+
 
 ---
 
@@ -204,8 +208,10 @@ Units_refunded,
 Units_Ordered,
 (Refund_rate * 0.6) + ((Units_refunded / NULLIF(Units_Ordered, 0)) * 0.4) AS RPS
 FROM seller_performance
-ORDER BY RPS DESC LIMIT 3; 
-**Output:** `outputs/rps_summary.csv`
+ORDER BY RPS DESC LIMIT 3;
+
+**Output:** <img width="778" height="205" alt="Screenshot (4)" src="https://github.com/user-attachments/assets/e22724b8-0a36-4eeb-ab18-bf85e1492a4f" />
+
 
 ---
 
@@ -220,7 +226,9 @@ AVG(Sessions_total / NULLIF(Page_views_total, 0)) AS avg_pv_to_session,
 AVG(Total_Order_Items / NULLIF(Sessions_total, 0)) AS avg_session_to_orderitem,
 AVG(Units_Ordered / NULLIF(Total_Order_Items, 0)) AS avg_orderitem_to_unit
 FROM seller_performance;  
-**Output:** `outputs/funnel_per_day.csv`
+
+**Output:** <img width="794" height="188" alt="Screenshot (5)" src="https://github.com/user-attachments/assets/f1a7c0eb-4b58-4c28-a148-eec0b48fb011" />
+
 
 ---
 
@@ -241,8 +249,10 @@ FROM seller_performance s
 CROSS JOIN stats
 WHERE s.Ordered_Product_Sales < 0.6 * stats.avg_sales
 AND s.Page_views_total > stats.avg_pv
-ORDER BY s.Date LIMIT 4;  
-**Output:** `outputs/anomalies.csv`
+ORDER BY s.Date LIMIT 4;
+
+**Output:** <img width="786" height="252" alt="Screenshot (6)" src="https://github.com/user-attachments/assets/baa86dc0-3301-4ff5-8598-ed757e0b6554" />
+
 
 ---
 
@@ -257,8 +267,9 @@ ORDER BY s.Date LIMIT 4;
 SELECT Date, Ordered_Product_Sales / NULLIF(Sessions_total, 0) AS revenue_per_session
 FROM seller_performance
 ORDER BY revenue_per_session DESC
-LIMIT 3; 
-**Output:** `outputs/revenue_per_session.csv`
+LIMIT 3;
+
+**Output:** <img width="772" height="170" alt="Screenshot (7)" src="https://github.com/user-attachments/assets/18fc2ca4-0d56-4c86-addf-6fcba530d30c" />
 
 ---
 
@@ -277,7 +288,9 @@ SELECT Average_offer_count, avg_conversion
 FROM offer_stats
 ORDER BY avg_conversion DESC
 LIMIT 1;
-**Output:** `outputs/offer_count_buckets.csv`
+
+**Output:** <img width="790" height="180" alt="Screenshot (8)" src="https://github.com/user-attachments/assets/cf6be32a-c070-495e-ae7e-0a5a96b14865" />
+
 
 ---
 
