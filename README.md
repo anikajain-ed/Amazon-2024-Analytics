@@ -15,11 +15,10 @@
    - Insight E: Conversion Funnel  
    - Insight F: High-Traffic Low-Sales Anomalies  
    - Insight G: Revenue Per Session  
-   - Insight H: Offer Count Saturation  
-8. How Code & Outputs Are Organized  
-9. Conclusion  
-10. Next Steps  
-11. References  
+   - Insight H: Offer Count Saturation   
+8. Conclusion  
+9. Next Steps  
+10. References  
 
 ---
 
@@ -70,7 +69,7 @@ All uploaded outputs are **anonymized, masked, or sample-only**.
   - Customer Intent Index  
   - Anomaly Detection  
   - Revenue Per Session  
-- Export SQL outputs to `/outputs/`.
+- Export SQL outputs to this file.
 - Document each insight clearly with SQL + explanation.
 
 Tools used:
