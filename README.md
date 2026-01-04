@@ -164,6 +164,17 @@ FROM seller_performance;
 - Strong correlation between Buy Box % & revenue  
 **Meaning:** Losing even 1–2% Featured Offer % materially reduces sales.  
 **SQL:** 
+WITH f AS (
+SELECT
+Date,
+Featured_offer_percentage,
+Ordered_Product_Sales,
+(Ordered_Product_Sales - LAG(Ordered_Product_Sales) OVER (ORDER BY Date)) / NULLIF(LAG(Ordered_Product_Sales) OVER (ORDER BY Date), 0) AS sales_pct_change,
+(Featured_offer_percentage - LAG(Featured_offer_percentage) OVER (ORDER BY Date)) / NULLIF(LAG(Featured_offer_percentage) OVER (ORDER BY Date), 0) AS feat_pct_change,
+(Featured_offer_percentage - LAG(Featured_offer_percentage) OVER (ORDER BY Date)) AS feat_diff_pp,
+(Ordered_Product_Sales - LAG(Ordered_Product_Sales) OVER (ORDER BY Date)) AS sales_diff_abs
+FROM seller_performance
+)
 SELECT
 SUM((feat_pct_change - AVG_feat) * (sales_pct_change - AVG_sales)) / NULLIF(SUM((feat_pct_change - AVG_feat) * (feat_pct_change - AVG_feat)),0) AS slope_pct_change
 FROM (
