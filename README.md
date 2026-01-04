@@ -109,8 +109,32 @@ CREATE INDEX idx_sku_date ON seller_performance(sku, Date);
 **Result:** Elasticity = **-1.89237**  
 **Meaning:** A 1% increase in price leads to ~1.89% drop in units ordered.  
 **Business Impact:** Price increases should be cautious; promotions strongly influence demand.  
-**SQL File:** `code/sql/price_elasticity.sql`  
-**Output File:** `outputs/price_elasticity.csv`
+**SQL code:** 
+WITH t AS (
+SELECT
+Date,
+LN(Average_selling_price) AS ln_price,
+LN(Units_Ordered) AS ln_units
+FROM seller_performance
+WHERE Average_selling_price > 0 AND Units_Ordered > 0
+),
+stats AS (
+SELECT
+AVG(ln_price) AS avg_ln_p,
+AVG(ln_units) AS avg_ln_u
+FROM t
+)
+SELECT
+-- slope = covariance(ln_price, ln_units) / variance(ln_price)
+SUM((t.ln_price - stats.avg_ln_p) * (t.ln_units - stats.avg_ln_u))
+/ NULLIF(SUM((t.ln_price - stats.avg_ln_p) * (t.ln_price - stats.avg_ln_p)), 0)
+AS price_elasticity
+FROM t
+CROSS JOIN stats;
+
+**Output:** 
+<img width="778" height="199" alt="Screenshot (1)" src="https://github.com/user-attachments/assets/4884867a-7ff6-461c-b9b3-76fecd2efe1f" />
+
 
 ---
 
